@@ -1,0 +1,76 @@
+name: Build Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      projectName:
+        description: 'Project Name'
+        required: true
+      projectBranch:
+        description: 'Project Branch'
+        required: true
+      jdkVersion:
+        description: 'Jdk Version'
+        required: true
+      nodeVersion:
+        description: 'Node Version'
+        required: true
+      buildCommand:
+        description: 'build Command'
+        required: true
+      pathName:
+        description: 'Path Name'
+        required: true
+      runnerType:
+        description: 'Runner Type'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - ubuntu-22.04-arm
+          - ubuntu-24.04-arm
+
+jobs:
+  build:
+    runs-on: ${{ github.event.inputs.runnerType }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        repository: '${{ github.event.inputs.projectName }}'
+        ref: '${{ github.event.inputs.projectBranch }}'
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '${{ github.event.inputs.jdkVersion }}'
+        distribution: 'adopt'
+
+    - name: Set up Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '${{ github.event.inputs.nodeVersion }}'
+
+    - name: Show Architecture Info
+      run: |
+        echo "Architecture: $(uname -m)"
+        echo "Runner: ${{ github.event.inputs.runnerType }}"
+        echo "Available memory:"
+        free -h
+        echo "CPU cores:"
+        nproc
+
+    - name: Build Project
+      run: ${{ github.event.inputs.buildCommand }}
+
+    - name: Compress File
+      run: tar -czf project-package.tar.gz ${{ github.event.inputs.pathName }}
+
+    - name: Upload File
+      uses: actions/upload-artifact@v4
+      with:
+        name: project-package
+        path: project-package.tar.gz
+        retention-days: 1
