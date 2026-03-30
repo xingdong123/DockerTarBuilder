@@ -6,8 +6,8 @@ on:
       projectName:
         description: 'Project Name'
         required: true
-      projectTag:
-        description: 'Project Tag'
+      projectBranch:
+        description: 'Project Branch'
         required: true
       jdkVersion:
         description: 'Jdk Version'
@@ -40,7 +40,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: '${{ github.event.inputs.projectName }}'
-        ref: '${{ github.event.inputs.projectTag }}'
+        ref: '${{ github.event.inputs.projectBranch }}'
 
     - name: Set up JDK
       uses: actions/setup-java@v2
